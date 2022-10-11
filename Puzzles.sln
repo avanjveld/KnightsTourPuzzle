@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KnightsTour", "KnightsTour\KnightsTour.csproj", "{E0DE7539-5F4D-4D1B-9D46-AF52A363D629}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KnightsTourLibrary", "KnightsTourLibrary\KnightsTourLibrary.csproj", "{EB82DBB0-C06E-4306-9E2A-09D4BE680218}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KnightsTourTests", "KnightsTourTests\KnightsTourTests.csproj", "{FACCA947-81EE-4FED-8B6F-2F582F77CE6A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E0DE7539-5F4D-4D1B-9D46-AF52A363D629}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E0DE7539-5F4D-4D1B-9D46-AF52A363D629}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E0DE7539-5F4D-4D1B-9D46-AF52A363D629}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E0DE7539-5F4D-4D1B-9D46-AF52A363D629}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EB82DBB0-C06E-4306-9E2A-09D4BE680218}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EB82DBB0-C06E-4306-9E2A-09D4BE680218}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EB82DBB0-C06E-4306-9E2A-09D4BE680218}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EB82DBB0-C06E-4306-9E2A-09D4BE680218}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FACCA947-81EE-4FED-8B6F-2F582F77CE6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FACCA947-81EE-4FED-8B6F-2F582F77CE6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FACCA947-81EE-4FED-8B6F-2F582F77CE6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FACCA947-81EE-4FED-8B6F-2F582F77CE6A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
