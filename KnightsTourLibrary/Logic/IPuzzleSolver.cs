@@ -2,7 +2,7 @@ namespace KnightsTourLibrary.Logic;
 
 public interface IPuzzleSolver
 {
-    bool IsNeighbour(int? x, int? y, int xx, int yy);
+    bool IsNeighbouringSquare(int? x, int? y, int targetX, int targetY);
     Tuple<bool, int[]> FindSolution();
-    void Print(IReadOnlyList<int> a);
+    void PrintBoard(IReadOnlyList<int> board);
 }

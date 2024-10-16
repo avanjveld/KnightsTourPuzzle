@@ -3,10 +3,10 @@ using KnightsTourLibrary.Logic;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-using IHost host = CreateHostBuilder(args).Build();
-using IServiceScope scope = host.Services.CreateScope();
+using var host = CreateHostBuilder(args).Build();
+using var scope = host.Services.CreateScope();
 
-IServiceProvider services = scope.ServiceProvider;
+var services = scope.ServiceProvider;
 
 try
 {
@@ -17,6 +17,8 @@ catch (Exception ex)
     Console.WriteLine(ex.Message);
     throw;
 }
+
+return;
 
 static IHostBuilder CreateHostBuilder(string[] args)
 {

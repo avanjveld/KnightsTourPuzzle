@@ -13,7 +13,7 @@ public class KnightsTourPuzzleSolverTests
     {
         ILogger<KnightsTourPuzzleSolver> logger = new NullLogger<KnightsTourPuzzleSolver>();
         IPuzzleSolver solver = new KnightsTourPuzzleSolver(logger);
-        bool actual = solver.IsNeighbour(x, y, xx, yy);
+        bool actual = solver.IsNeighbouringSquare(x, y, xx, yy);
         Assert.Equal(expected, actual);
     }
 }

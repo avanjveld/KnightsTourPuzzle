@@ -29,7 +29,7 @@ public class App
                 continue;
             }
 
-            _puzzleSolver.Print(result);
+            _puzzleSolver.PrintBoard(result);
             Console.WriteLine($"Puzzle solved in {attemptNo} attempts.");
         }
     }

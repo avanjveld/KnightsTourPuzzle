@@ -8,196 +8,162 @@ namespace KnightsTourLibrary.Logic;
 /// </summary>
 public class KnightsTourPuzzleSolver : IPuzzleSolver
 {
-	
-	private readonly ILogger<KnightsTourPuzzleSolver> _log;
+    private readonly ILogger<KnightsTourPuzzleSolver> _logger;
 
-	private const int _boardSize = 8;
+    private const int BoardSize = 8;
 
-	// Move pattern on basis of the change of
-	// x coordinates and y coordinates respectively
-	public int[] _cx = {1, 1, 2, 2, -1, -1, -2, -2};
-	public int[] _cy = {2, -2, 1, -1, 2, -2, 1, -1};
+    // Move pattern on basis of the change of
+    // x coordinates and y coordinates respectively
+    private readonly int[] _xMoves = {1, 1, 2, 2, -1, -1, -2, -2};
+    private readonly int[] _yMoves = {2, -2, 1, -1, 2, -2, 1, -1};
 
-	public KnightsTourPuzzleSolver(ILogger<KnightsTourPuzzleSolver> log)
-	{
-		_log = log ?? throw new ArgumentNullException(nameof(log));
-	}
-	
-	/// <summary>
-	/// function restricts the knight to remain within the 8x8 chessboard 
-	/// </summary>
-	/// <param name="x"></param>
-	/// <param name="y"></param>
-	/// <returns></returns>
-	private static bool limits(int x, int y)
-	{
-		return x >= 0 && y >= 0 && x < _boardSize && y < _boardSize;
-	}
+    public KnightsTourPuzzleSolver(ILogger<KnightsTourPuzzleSolver> logger)
+    {
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
 
-	/// <summary>
-	/// Checks whether a square is valid and empty or not 
-	/// </summary>
-	/// <param name="a"></param>
-	/// <param name="x"></param>
-	/// <param name="y"></param>
-	/// <returns></returns>
-	private static bool isempty(IReadOnlyList<int> a, int x, int y)
-	{
-		return limits(x, y) && (a[y * _boardSize + x] < 0);
-	}
+    /// <summary>
+    /// Restricts the knight to remain within the 8x8 chessboard
+    /// </summary>
+    private static bool IsWithinBoardLimits(int x, int y)
+    {
+        return x >= 0 && y >= 0 && x < BoardSize && y < BoardSize;
+    }
 
-	/// <summary>
-	/// Returns the number of empty squares adjacent to (x, y) 
-	/// </summary>
-	/// <param name="a"></param>
-	/// <param name="x"></param>
-	/// <param name="y"></param>
-	/// <returns></returns>
-	private int getDegree(IReadOnlyList<int> a, int x, int y)
-	{
-		int count = 0;
-		for (int i = 0; i < _boardSize; ++i)
-			if (isempty(a, (x + _cx[i]), (y + _cy[i])))
-				count++;
+    /// <summary>
+    /// Checks whether a square is valid and empty or not
+    /// </summary>
+    private static bool IsValidAndEmpty(IReadOnlyList<int> board, int x, int y)
+    {
+        return IsWithinBoardLimits(x, y) && (board[y * BoardSize + x] < 0);
+    }
 
-		return count;
-	}
-	
-	/// <summary>
-	/// Picks next point using Warnsdorff's heuristic.
-	/// Returns false if it is not possible to pick next point. 
-	/// </summary>
-	/// <param name="a"></param>
-	/// <param name="cell"></param>
-	/// <returns></returns>
-	private Cell? nextMove(int[] a, Cell cell)
-	{
-		_log.LogDebug("From [{x},{y}]:", cell.x, cell.y);
-		int min_deg_idx = -1;
-		int min_deg = (_boardSize + 1);
+    /// <summary>
+    /// Returns the number of empty squares adjacent to (x, y)
+    /// </summary>
+    private int GetAdjacentEmptySquareCount(IReadOnlyList<int> board, int x, int y)
+    {
+        var count = 0;
+        for (var i = 0; i < BoardSize; ++i)
+            if (IsValidAndEmpty(board, (x + _xMoves[i]), (y + _yMoves[i])))
+                count++;
 
-		min_deg_idx = FindAdjacentMinDegree(a, out int nx, out int ny, cell, min_deg, min_deg_idx);
+        return count;
+    }
 
-		// If we could not find a next cell
-		if (min_deg_idx == -1)
-			return null;
+    /// <summary>
+    /// Picks next point using Warnsdorff's heuristic.
+    /// Returns false if it is not possible to pick next point.
+    /// </summary>
+    private Cell? GetNextMove(int[] board, Cell currentCell)
+    {
+        _logger.LogDebug("From [{x},{y}]:", currentCell.X, currentCell.Y);
+        var minDegreeIndex = -1;
+        const int minDegree = (BoardSize + 1);
 
-		// Store coordinates of next point
-		nx = cell.x + _cx[min_deg_idx];
-		ny = cell.y + _cy[min_deg_idx];
+        minDegreeIndex = FindMinDegreeAdjacentCell(board, out var nextX, out var nextY, currentCell, minDegree, minDegreeIndex);
 
-		// Mark next move
-		a[ny * _boardSize + nx] = a[cell.y * _boardSize + cell.x] + 1;
+        // If we could not find a next cell
+        if (minDegreeIndex == -1)
+            return null;
 
-		// Update next point
-		cell.x = nx;
-		cell.y = ny;
+        // Store coordinates of next point
+        nextX = currentCell.X + _xMoves[minDegreeIndex];
+        nextY = currentCell.Y + _yMoves[minDegreeIndex];
 
-		_log.LogDebug("To [{x},{y}]:", cell.x, cell.y);
-		return cell;
-	}
+        // Mark next move
+        board[nextY * BoardSize + nextX] = board[currentCell.Y * BoardSize + currentCell.X] + 1;
 
-	/// <summary>
-	/// Try all N adjacent of (*x, *y) starting from a random adjacent. Find the adjacent with minimum degree.
-	/// </summary>
-	/// <param name="a"></param>
-	/// <param name="nx"></param>
-	/// <param name="ny"></param>
-	/// <param name="cell"></param>
-	/// <param name="min_deg"></param>
-	/// <param name="min_deg_idx"></param>
-	/// <returns></returns>
-	private int FindAdjacentMinDegree(IReadOnlyList<int> a, out int nx, out int ny, Cell cell, int min_deg, int min_deg_idx)
-	{
-		nx = 0;
-		ny = 0;
+        // Update next point
+        currentCell.X = nextX;
+        currentCell.Y = nextY;
 
-		Random random = new();
-		int start = random.Next(0, 1000);
-		for (int count = 0; count < _boardSize; ++count)
-		{
-			int i = (start + count) % _boardSize;
-			nx = cell.x + _cx[i];
-			ny = cell.y + _cy[i];
-			int c;
-			if ((!isempty(a, nx, ny)) ||
-			    (c = getDegree(a, nx, ny)) >= min_deg) continue;
-			min_deg_idx = i;
-			min_deg = c;
-		}
+        _logger.LogDebug("To [{x},{y}]:", currentCell.X, currentCell.Y);
+        return currentCell;
+    }
 
-		return min_deg_idx;
-	}
+    /// <summary>
+    /// Try all N adjacent of (*x, *y) starting from a random adjacent. Find the adjacent with minimum degree.
+    /// </summary>
+    private int FindMinDegreeAdjacentCell(IReadOnlyList<int> board, out int nextX, out int nextY, Cell currentCell, int minDegree, int minDegreeIndex)
+    {
+        nextX = 0;
+        nextY = 0;
 
-	/// <summary>
-	/// Displays the chessboard with all the legal knight's moves 
-	/// </summary>
-	/// <param name="a"></param>
-	public void Print(IReadOnlyList<int> a)
-	{
-		for (int i = 0; i < _boardSize; ++i)
-		{
-			for (int j = 0; j < _boardSize; ++j)
-				Console.Write(a[j * _boardSize + i]+"\t");
-			Console.Write("\n\n\n");
-		}
-	}
-	
-	/// <summary>
-	/// Checks its neighbouring squares 
-	/// </summary>
-	/// <param name="x"></param>
-	/// <param name="y"></param>
-	/// <param name="xx"></param>
-	/// <param name="yy"></param>
-	/// <returns>Returns true if the knight ends on a square that is oneknight's move from the beginning square,
-	/// then tour is closed
-	/// </returns>
-	public bool IsNeighbour(int? x, int? y, int xx, int yy)
-	{
-		for (int i = 0; i < _boardSize; ++i)
-			if (((x + _cx[i]) == xx) &&
-				((y + _cy[i]) == yy))
-				return true;
+        Random random = new();
+        var start = random.Next(0, 1000);
+        for (var count = 0; count < BoardSize; ++count)
+        {
+            var i = (start + count) % BoardSize;
+            nextX = currentCell.X + _xMoves[i];
+            nextY = currentCell.Y + _yMoves[i];
+            int degree;
+            if ((!IsValidAndEmpty(board, nextX, nextY)) ||
+                (degree = GetAdjacentEmptySquareCount(board, nextX, nextY)) >= minDegree) continue;
+            minDegreeIndex = i;
+            minDegree = degree;
+        }
 
-		return false;
-	}
+        return minDegreeIndex;
+    }
 
-	/// <summary>
-	/// Generates the legal moves using warnsdorff's heuristics.  
-	/// </summary>
-	/// <returns>Returns false if not possible</returns>
-	public Tuple<bool, int[]> FindSolution()
-	{
-		
-		// Filling up the chessboard matrix with -1's
-		int[] a = new int[_boardSize * _boardSize];
-		for (int i = 0; i < _boardSize * _boardSize; ++i)
-			a[i] = -1;
+    /// <summary>
+    /// Displays the chessboard with all the legal knight's moves
+    /// </summary>
+    public void PrintBoard(IReadOnlyList<int> board)
+    {
+        for (var i = 0; i < BoardSize; ++i)
+        {
+            for (var j = 0; j < BoardSize; ++j)
+                Console.Write(board[j * BoardSize + i] + "\t");
+            Console.Write("\n\n\n");
+        }
+    }
 
-		// initial position
-		const int sx = 3;
-		const int sy = 2;
+    /// <summary>
+    /// Checks its neighbouring squares
+    /// </summary>
+    public bool IsNeighbouringSquare(int? x, int? y, int targetX, int targetY)
+    {
+        for (var i = 0; i < BoardSize; ++i)
+            if (((x + _xMoves[i]) == targetX) &&
+                ((y + _yMoves[i]) == targetY))
+                return true;
 
-		// Current points are same as initial points
-		Cell cell = new(sx, sy);
+        return false;
+    }
 
-		a[cell.y * _boardSize + cell.x] = 1; // Mark first move.
+    /// <summary>
+    /// Generates the legal moves using Warnsdorff's heuristics.
+    /// </summary>
+    public Tuple<bool, int[]> FindSolution()
+    {
+        // Filling up the chessboard matrix with -1's
+        var board = new int[BoardSize * BoardSize];
+        for (var i = 0; i < BoardSize * BoardSize; ++i)
+            board[i] = -1;
 
-		// Keep picking next points using Warnsdorff's heuristic
-		Cell? ret = null;
-		for (int i = 0; i < _boardSize * _boardSize - 1; ++i)
-		{
-			ret = nextMove(a, cell);
-			if (ret == null)
-				return new Tuple<bool, int[]>(false, a);
-		}
+        // initial position
+        const int startX = 3;
+        const int startY = 2;
 
-		// Check if tour is closed (Can end at starting point)
-		return !IsNeighbour(ret?.x, ret?.y, sx, sy) 
-			? new Tuple<bool, int[]>(false, a) 
-			: new Tuple<bool, int[]>(true, a);
-	}
+        // Current points are same as initial points
+        Cell currentCell = new(startX, startY);
 
+        board[currentCell.Y * BoardSize + currentCell.X] = 1; // Mark first move.
+
+        // Keep picking next points using Warnsdorff's heuristic
+        Cell? nextCell = null;
+        for (var i = 0; i < BoardSize * BoardSize - 1; ++i)
+        {
+            nextCell = GetNextMove(board, currentCell);
+            if (nextCell == null)
+                return new Tuple<bool, int[]>(false, board);
+        }
+
+        // Check if tour is closed (Can end at starting point)
+        return !IsNeighbouringSquare(nextCell?.X, nextCell?.Y, startX, startY)
+            ? new Tuple<bool, int[]>(false, board)
+            : new Tuple<bool, int[]>(true, board);
+    }
 }
-
